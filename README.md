@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Spictank Leaderboard</title>
+
 </head>
 <body>
     <img src="https://github.com/user-attachments/assets/c520855c-8b1c-4edc-a664-19f7ccfb949a" alt="Spictank Leaderboard">
