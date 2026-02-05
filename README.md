@@ -12,7 +12,7 @@
         calculate, and display user rankings for the <strong>Spictank</strong> community on Scored.co.
     </p>
     <div class="feature-list">
-        <h2>🚀 Core Features</h2>
+        <h2>Core Features</h2>
         <ul>
             <li>
                 <strong>Automated Data Fetching:</strong>
@@ -35,17 +35,17 @@
             </li>
         </ul>
     </div>
-    <h2>📘 Scored API Reference</h2>
+    <h2>Scored API Reference</h2>
     <p>
         This project relies on Scored’s official API (v2).
         Full documentation, authentication details, and endpoint references are available here:
     </p>
     <p>
-        👉 <a href="https://docs.scored.co/" target="_blank" rel="noopener noreferrer">
+         <a href="https://docs.scored.co/" target="_blank" rel="noopener noreferrer">
             https://docs.scored.co/
         </a>
     </p>
-    <h2>🛠️ Environment Setup</h2>
+    <h2>Environment Setup</h2>
     <p>
         The application requires a <code>.env</code> file with the following credentials
         to interact with the Scored API:
@@ -90,7 +90,7 @@ PORT=3001
             </tr>
         </tbody>
     </table>
-    <h2>⚙️ Deployment</h2>
+    <h2>Deployment</h2>
     <p>To deploy as a system service, use the provided installation script:</p>
     <pre>
 # Make script executable
