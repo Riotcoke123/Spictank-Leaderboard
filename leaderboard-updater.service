@@ -1,0 +1,105 @@
+# Communities.win Leaderboard Service
+# Systemd service file for running the leaderboard server as a background service
+
+[Unit]
+Description=Communities.win Leaderboard Server with Auto-Updates
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=YOUR_USERNAME
+WorkingDirectory=/path/to/your/leaderboard
+ExecStart=/usr/bin/node /path/to/your/leaderboard/app.js server
+
+# Restart policy
+Restart=always
+RestartSec=10
+
+# Logging
+StandardOutput=append:/var/log/leaderboard.log
+StandardError=append:/var/log/leaderboard.log
+
+# Environment
+Environment="NODE_ENV=production"
+Environment="PORT=3000"
+
+# Security hardening (optional but recommended)
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/path/to/your/leaderboard
+
+[Install]
+WantedBy=multi-user.target
+
+# ============================================================================
+# INSTALLATION INSTRUCTIONS
+# ============================================================================
+#
+# 1. Edit this file and replace:
+#    - YOUR_USERNAME with your actual Linux username (e.g., ubuntu, pi, yourname)
+#    - /path/to/your/leaderboard with the actual full path (e.g., /home/yourname/leaderboard)
+#    - Update ReadWritePaths to match your actual path
+#
+# 2. Create log directory and set permissions:
+#    sudo mkdir -p /var/log
+#    sudo touch /var/log/leaderboard.log
+#    sudo chown YOUR_USERNAME:YOUR_USERNAME /var/log/leaderboard.log
+#
+# 3. Copy this file to systemd directory:
+#    sudo cp leaderboard-updater.service /etc/systemd/system/
+#
+# 4. Reload systemd to recognize the new service:
+#    sudo systemctl daemon-reload
+#
+# 5. Enable service to start on boot:
+#    sudo systemctl enable leaderboard-updater
+#
+# 6. Start the service now:
+#    sudo systemctl start leaderboard-updater
+#
+# ============================================================================
+# MANAGEMENT COMMANDS
+# ============================================================================
+#
+# Check service status:
+#   sudo systemctl status leaderboard-updater
+#
+# Stop the service:
+#   sudo systemctl stop leaderboard-updater
+#
+# Restart the service:
+#   sudo systemctl restart leaderboard-updater
+#
+# Disable service from starting on boot:
+#   sudo systemctl disable leaderboard-updater
+#
+# View live logs:
+#   sudo journalctl -u leaderboard-updater -f
+#
+# View last 100 log lines:
+#   sudo journalctl -u leaderboard-updater -n 100
+#
+# View logs from today:
+#   sudo journalctl -u leaderboard-updater --since today
+#
+# View the log file directly:
+#   sudo tail -f /var/log/leaderboard.log
+#
+# ============================================================================
+# EXAMPLE CONFIGURATION
+# ============================================================================
+#
+# If your username is "ubuntu" and your leaderboard is at /home/ubuntu/leaderboard:
+#
+#   User=ubuntu
+#   WorkingDirectory=/home/ubuntu/leaderboard
+#   ExecStart=/usr/bin/node /home/ubuntu/leaderboard/app.js server
+#   ReadWritePaths=/home/ubuntu/leaderboard
+#
+# Then after copying to systemd:
+#   sudo chown ubuntu:ubuntu /var/log/leaderboard.log
+#
+# ============================================================================
