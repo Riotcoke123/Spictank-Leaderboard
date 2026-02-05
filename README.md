@@ -3,6 +3,7 @@
 <head>
 </head>
 <body>
+   <img src="https://github.com/user-attachments/assets/c520855c-8b1c-4edc-a664-19f7ccfb949a">
     <h1>Spictank Leaderboard <span class="badge">v1.0.0</span></h1>
     <p>A high-performance Node.js backend and automated fetcher designed to track, calculate, and display user rankings for the <strong>Spictank</strong> community on Scored.co.</p>
     <div class="feature-list">
