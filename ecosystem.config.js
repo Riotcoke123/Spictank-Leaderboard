@@ -8,7 +8,7 @@ module.exports = {
       PORT: 3001,
       // Include your .env variables here if they are not being loaded automatically
       API_BASE_URL: "https://communities.win/api/v2/",
-      COMMUNITY: "your_community_name", 
+      COMMUNITY: "spictank", 
       DB_PATH: "./leaderboard.db"
     },
     // Restart policy
@@ -20,4 +20,5 @@ module.exports = {
     out_file: "/root/.pm2/logs/spic-out.log",
     log_date_format: "YYYY-MM-DD HH:mm:ss"
   }]
+
 }
