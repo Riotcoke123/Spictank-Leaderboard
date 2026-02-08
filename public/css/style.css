@@ -33,7 +33,7 @@ body {
     padding: 3rem 2rem 4rem;
 }
 
-/* Header */
+/* ================= HEADER ================= */
 
 header {
     text-align: center;
@@ -57,7 +57,27 @@ h1 {
     color: var(--text-secondary);
 }
 
-/* Controls */
+header .link {
+    margin-top: 1rem;
+}
+
+header .link a {
+    color: white;
+    text-decoration: none;
+    font-weight: 600;
+    padding: 0.6rem 1.2rem;
+    border: 2px solid white;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+header .link a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: scale(1.05);
+}
+
+/* ================= CONTROLS ================= */
 
 .controls {
     display: flex;
@@ -76,7 +96,7 @@ button {
     cursor: pointer;
 }
 
-/* Stats */
+/* ================= STATS ================= */
 
 .stats {
     display: grid;
@@ -104,7 +124,7 @@ button {
     color: var(--purple-bright);
 }
 
-/* Table */
+/* ================= TABLE ================= */
 
 .table-container {
     background: var(--bg-secondary);
@@ -133,14 +153,14 @@ td {
     padding: 1rem 0;
     text-align: center;
     border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
 }
 
-/* Columns */
+/* ================= COLUMNS ================= */
 
 .col-rank {
     width: 80px;
     text-align: center;
-    vertical-align: middle;
 }
 
 .rank-inner {
@@ -150,20 +170,25 @@ td {
     width: 100%;
 }
 
+/* Username column header + cells */
 .col-username {
     width: 30%;
     text-align: left;
+    padding-left: 16px;   /* 👈 same padding for header */
 }
 
+/* Username inner wrapper */
 .username-inner {
-    padding-left: 16px;
+    display: flex;
+    align-items: center;
+    height: 100%;
+    padding-left: 0;      /* 👈 remove extra shift */
 }
-
 .col-posts { width: 15%; }
 .col-active { width: 30%; }
 .col-score  { width: 20%; }
 
-/* Text */
+/* ================= TEXT ================= */
 
 .rank-medal {
     font-size: 1.5rem;
@@ -173,6 +198,7 @@ td {
     color: var(--purple-bright);
     text-decoration: none;
     font-weight: 600;
+    line-height: 1.2;
 }
 
 .score-value {
@@ -186,31 +212,103 @@ td {
     font-size: 0.95rem;
 }
 
-/* Loading */
+/* ================= LOADING ================= */
 
 .loading {
     padding: 3rem;
     text-align: center;
     color: var(--text-secondary);
 }
-header .link {
-    margin-top: 1rem;
+
+/* ================= RESPONSIVE ================= */
+
+/* Tablet */
+@media (max-width: 1024px) {
+    .container {
+        padding: 2rem 1.5rem 3rem;
+    }
+
+    h1 {
+        font-size: 4rem;
+    }
+
+    .stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .col-username { width: 35%; }
+    .col-posts { width: 12%; }
+    .col-active { width: 28%; }
+    .col-score { width: 18%; }
 }
 
-header .link a {
-    color: white;                /* White text */
-    text-decoration: none;       /* No underline */
-    font-weight: 600;            /* Bold text */
-    padding: 0.6rem 1.2rem;     /* Add button-like padding */
-    border: 2px solid white;     /* White border */
-    border-radius: 0.5rem;       /* Rounded corners */
-    transition: all 0.3s ease;   /* Smooth hover effect */
-    display: inline-block;
+/* Mobile */
+@media (max-width: 767px) {
+    body {
+        padding-top: 1rem;
+    }
+
+    .container {
+        padding: 1.5rem 1rem 2rem;
+    }
+
+    h1 {
+        font-size: 2.5rem;
+        letter-spacing: 0.05em;
+    }
+
+    .subtitle {
+        font-size: 0.9rem;
+        letter-spacing: 0.2em;
+    }
+
+    .controls {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    button {
+        width: 100%;
+        font-size: 1.1rem;
+        padding: 0.75rem 1.5rem;
+    }
+
+    .stats {
+        grid-template-columns: 1fr;
+    }
+
+    .table-container {
+        overflow-x: auto;
+    }
+
+    table {
+        min-width: 600px;
+    }
+
+    th {
+        font-size: 1.1rem;
+    }
+
+    td {
+        font-size: 0.9rem;
+    }
+
+    .col-rank {
+        width: 60px;
+    }
+
+    .username-inner {
+        padding-left: 8px;
+    }
 }
 
-header .link a:hover {
-    color: white;                /* Stay white */
-    text-decoration: none;       /* No underline */
-    background-color: rgba(255, 255, 255, 0.1); /* Slight hover background */
-    transform: scale(1.05);      /* Subtle pop effect */
+/* Extra Small */
+@media (max-width: 480px) {
+    h1 {
+        font-size: 2rem;
+    }
+
+    table {
+        min-width: 550px;
+    }
 }
