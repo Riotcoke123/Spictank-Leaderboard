@@ -4,12 +4,15 @@ const axios = require('axios');
 const Database = require('better-sqlite3');
 const path = require('path');
 const pino = require('pino');
+const fs = require('fs');
 
 // =========================
 // CONFIG
 // =========================
 const PORT = process.env.PORT || 3001;
-const AUTO_UPDATE_INTERVAL = Number(process.env.AUTO_UPDATE_INTERVAL_MS) || 300000;
+const AUTO_UPDATE_INTERVAL = 90 * 1000;
+const BACKUP_INTERVAL = 6 * 60 * 60 * 1000; // 6 hours
+const BACKUP_DIR = process.env.BACKUP_DIR || './backups';
 const logger = pino({
   transport: { target: 'pino-pretty', options: { colorize: true } }
 });
@@ -20,6 +23,11 @@ const logger = pino({
 const dbPath = process.env.DB_PATH || './leaderboard.db';
 const db = new Database(dbPath);
 db.pragma('journal_mode = WAL');
+
+// Create backup directory if it doesn't exist
+if (!fs.existsSync(BACKUP_DIR)) {
+  fs.mkdirSync(BACKUP_DIR, { recursive: true });
+}
 
 db.exec(`
 CREATE TABLE IF NOT EXISTS leaderboard (
@@ -53,6 +61,60 @@ CREATE TABLE IF NOT EXISTS authors (
 CREATE INDEX IF NOT EXISTS idx_posts_author ON posts(author);
 CREATE INDEX IF NOT EXISTS idx_authors_username ON authors(username);
 `);
+
+// =========================
+// BACKUP & RESTORE
+// =========================
+function createBackup() {
+  try {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const backupPath = path.join(BACKUP_DIR, `leaderboard-${timestamp}.db`);
+    
+    // Use SQLite backup API for safe backup
+    db.backup(backupPath);
+    
+    logger.info({ backupPath }, 'Database backup created');
+    
+    // Keep only last 10 backups
+    const backups = fs.readdirSync(BACKUP_DIR)
+      .filter(f => f.startsWith('leaderboard-') && f.endsWith('.db'))
+      .sort()
+      .reverse();
+    
+    if (backups.length > 10) {
+      backups.slice(10).forEach(f => {
+        fs.unlinkSync(path.join(BACKUP_DIR, f));
+        logger.info({ file: f }, 'Old backup deleted');
+      });
+    }
+    
+    return backupPath;
+  } catch (err) {
+    logger.error({ err }, 'Error creating backup');
+    throw err;
+  }
+}
+
+function exportAuthorsJSON() {
+  try {
+    const authors = db.prepare(`
+      SELECT username, first_seen_at, last_seen_at
+      FROM authors
+      ORDER BY username
+    `).all();
+    
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const jsonPath = path.join(BACKUP_DIR, `authors-${timestamp}.json`);
+    
+    fs.writeFileSync(jsonPath, JSON.stringify(authors, null, 2));
+    logger.info({ jsonPath, count: authors.length }, 'Authors exported to JSON');
+    
+    return jsonPath;
+  } catch (err) {
+    logger.error({ err }, 'Error exporting authors');
+    throw err;
+  }
+}
 
 // =========================
 // HELPERS
@@ -303,6 +365,52 @@ app.get('/api/authors', (req, res) => {
   }
 });
 
+app.post('/api/backup', async (req, res) => {
+  try {
+    const dbBackup = createBackup();
+    const jsonBackup = exportAuthorsJSON();
+    res.json({ 
+      success: true, 
+      dbBackup: path.basename(dbBackup),
+      jsonBackup: path.basename(jsonBackup)
+    });
+  } catch (err) {
+    logger.error({ err }, 'Error creating backup');
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/backup/download/:type', (req, res) => {
+  try {
+    const { type } = req.params;
+    let files;
+    
+    if (type === 'db') {
+      files = fs.readdirSync(BACKUP_DIR)
+        .filter(f => f.startsWith('leaderboard-') && f.endsWith('.db'))
+        .sort()
+        .reverse();
+    } else if (type === 'json') {
+      files = fs.readdirSync(BACKUP_DIR)
+        .filter(f => f.startsWith('authors-') && f.endsWith('.json'))
+        .sort()
+        .reverse();
+    } else {
+      return res.status(400).json({ error: 'Invalid backup type' });
+    }
+    
+    if (files.length === 0) {
+      return res.status(404).json({ error: 'No backups found' });
+    }
+    
+    const latestBackup = path.join(BACKUP_DIR, files[0]);
+    res.download(latestBackup);
+  } catch (err) {
+    logger.error({ err }, 'Error downloading backup');
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 app.post('/api/refresh', async (req, res) => {
   try {
     await fetchAndUpdateData();
@@ -315,8 +423,20 @@ app.post('/api/refresh', async (req, res) => {
 
 const server = app.listen(PORT, () => {
   logger.info(`Server running at http://localhost:${PORT}`);
+  
+  // Initial backup on startup
+  createBackup();
+  exportAuthorsJSON();
+  
+  // Fetch initial data
   fetchAndUpdateData();
+  
+  // Schedule periodic updates and backups
   setInterval(fetchAndUpdateData, AUTO_UPDATE_INTERVAL);
+  setInterval(() => {
+    createBackup();
+    exportAuthorsJSON();
+  }, BACKUP_INTERVAL);
 });
 
 // =========================
