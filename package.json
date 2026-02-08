@@ -1,6 +1,6 @@
 {
   "name": "communities-leaderboard",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Leaderboard fetcher for communities.win",
   "main": "server.js",
   "scripts": {
