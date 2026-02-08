@@ -1,0 +1,83 @@
+version: '3.8'
+
+services:
+  leaderboard:
+    build: .
+    container_name: leaderboard
+    ports:
+      - "3001:3001"
+    volumes:
+      # Persistent data volume - THIS IS CRITICAL
+      - leaderboard-data:/app/data
+      # Optional: Mount config from host
+      - ./.env:/app/.env:ro
+    environment:
+      - NODE_ENV=production
+      - DB_PATH=/app/data/leaderboard.db
+      - BACKUP_DIR=/app/data/backups
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3001/api/stats', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s
+    networks:
+      - leaderboard-network
+
+  # Optional: Automated backup to S3
+  backup-s3:
+    image: amazon/aws-cli:latest
+    container_name: leaderboard-backup-s3
+    volumes:
+      - leaderboard-data:/data:ro
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-1}
+      - S3_BUCKET=${S3_BUCKET:-leaderboard-backups}
+    entrypoint: >
+      sh -c "
+        while true; do
+          echo \"[$(date)] Syncing backups to S3...\"
+          aws s3 sync /data/backups s3://$$S3_BUCKET/backups/ --storage-class STANDARD_IA
+          echo \"[$(date)] Sync completed\"
+          sleep 21600
+        done
+      "
+    restart: unless-stopped
+    networks:
+      - leaderboard-network
+    depends_on:
+      - leaderboard
+
+  # Optional: Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: leaderboard-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    restart: unless-stopped
+    networks:
+      - leaderboard-network
+    depends_on:
+      - leaderboard
+
+volumes:
+  # Named volume for persistent data
+  # Data persists even if container is deleted
+  leaderboard-data:
+    driver: local
+    # Optional: specify exact host path
+    # driver_opts:
+    #   type: none
+    #   device: /opt/leaderboard-data
+    #   o: bind
+
+networks:
+  leaderboard-network:
+    driver: bridge
