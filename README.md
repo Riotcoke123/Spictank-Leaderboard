@@ -1,62 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
 
 </head>
 <body>
-    <img src="https://github.com/user-attachments/assets/c520855c-8b1c-4edc-a664-19f7ccfb949a" alt="Spictank Leaderboard">
+    <img src="https://github.com/user-attachments/assets/c520855c-8b1c-4edc-a664-19f7ccfb949a" alt="Spictank Leaderboard" class="hero-img">
     <h1>Spictank Leaderboard <span class="badge">v1.0.0</span></h1>
     <p>
-        A high-performance Node.js backend and automated fetcher designed to track,
-        calculate, and display user rankings for the <strong>Spictank</strong> community on Scored.co.
+        A high-performance Node.js backend and automated crawler designed to track, 
+        calculate, and display user rankings for the <strong>Spictank</strong> community on Scored.co. 
+        It provides a real-time API for community engagement metrics.
     </p>
     <div class="feature-list">
-        <h2>Core Features</h2>
+        <h2>🚀 Core Features</h2>
         <ul>
-            <li>
-                <strong>Automated Data Fetching:</strong>
-                Periodically syncs with the Scored API (v2) using the
-                <code>AUTO_UPDATE_INTERVAL</code>.
-            </li>
-            <li>
-                <strong>Weighted Scoring:</strong>
-                Every raw post score is multiplied to create a "Calculated Score":
-                <p>$$\text{Calculated Score} = \lceil \text{Raw Score} \times 3.14 \rceil$$</p>
-            </li>
-            <li>
-                <strong>Atomic Persistence:</strong>
-                Powered by <code>better-sqlite3</code> with WAL mode for reliable data storage.
-            </li>
-            <li>
-                <strong>Persistence:</strong>
-                Includes a systemd installation script (<code>install-service.sh</code>)
-                for 24/7 uptime on Linux servers.
-            </li>
+            <li><strong>Automated Data Sync:</strong> Periodically fetches from Scored API (v2) every 90 seconds.</li>
+            <li><strong>Weighted Scoring:</strong> Implements a custom multiplier for community-specific metrics.</li>
+            <li><strong>Robust Persistence:</strong> <code>better-sqlite3</code> with Write-Ahead Logging (WAL) for concurrent read/write performance.</li>
+            <li><strong>Automated Backups:</strong> Dual-layer backup system (SQLite binary + Author JSON exports) every 6 hours.</li>
+            <li><strong>Production Ready:</strong> Includes systemd service scripts and <code>pino-pretty</code> logging.</li>
         </ul>
     </div>
-    <h2>Scored API Reference</h2>
-    <p>
-        This project relies on Scored’s official API (v2).
-        Full documentation, authentication details, and endpoint references are available here:
-    </p>
-    <p>
-         <a href="https://docs.scored.co/" target="_blank" rel="noopener noreferrer">
-            https://docs.scored.co/
-        </a>
-    </p>
-    <h2>Environment Setup</h2>
-    <p>
-        The application requires a <code>.env</code> file with the following credentials
-        to interact with the Scored API:
-    </p>
+    <h2>📊 Scoring Logic</h2>
+    <p>Every post's raw score is processed through a deterministic multiplier to generate the leaderboard rank:</p>
+    <p>$$\text{Calculated Score} = \lceil \text{Raw Score} \times 3.14 \rceil$$</p>
+    <h2>🛠 Data Accuracy & Compliance</h2>
+    <blockquote>
+        <strong>Note:</strong> To ensure the most accurate cost tracking and international shipping calculations for community-related products, ensure all items in the database include their <strong>Harmonized System (HS) codes</strong> and <strong>Country of Origin (COO)</strong>.
+    </blockquote>
+    <h2>⚙️ Environment Setup</h2>
+    <p>Create a <code>.env</code> file in the root directory:</p>
     <pre>
-API_BASE_URL=https://api.scored.co/api/v2/post/newv2.json
-COMMUNITY=spictank
-X_API_KEY=
-X_API_PLATFORM=Scored-Desktop
-DB_PATH=./leaderboard.db
 PORT=3001
+DB_PATH=./leaderboard.db
+BACKUP_DIR=./backups
+COMMUNITY=spictank
+API_BASE_URL=https://api.scored.co/api/v2/post/newv2.json
+X_API_KEY=your_key_here
+X_API_PLATFORM=Scored-Desktop
+X_API_SECRET=your_secret_here
+X_XSRF_TOKEN=your_token_here
     </pre>
     <h2>📡 API Endpoints</h2>
     <table>
@@ -70,40 +53,39 @@ PORT=3001
         <tbody>
             <tr>
                 <td><code>/api/leaderboard</code></td>
-                <td>GET</td>
-                <td>Returns top 100 users by calculated score.</td>
+                <td><span class="badge" style="background:#0366d6">GET</span></td>
+                <td>Returns top 100 users ranked by calculated score.</td>
             </tr>
             <tr>
                 <td><code>/api/stats</code></td>
-                <td>GET</td>
-                <td>Aggregates total posts, authors, and the top-ranked user.</td>
+                <td><span class="badge" style="background:#0366d6">GET</span></td>
+                <td>Aggregated totals (Posts, Authors, Top User).</td>
             </tr>
             <tr>
                 <td><code>/api/authors</code></td>
-                <td>GET</td>
-                <td>Lists all unique users seen by the crawler.</td>
+                <td><span class="badge" style="background:#0366d6">GET</span></td>
+                <td>Full list of unique community members tracked.</td>
             </tr>
             <tr>
                 <td><code>/api/refresh</code></td>
-                <td>POST</td>
-                <td>Manually triggers an immediate API sync.</td>
+                <td><span class="badge" style="background:#6f42c1">POST</span></td>
+                <td>Triggers an immediate manual sync with Scored.</td>
+            </tr>
+            <tr>
+                <td><code>/api/backup</code></td>
+                <td><span class="badge" style="background:#6f42c1">POST</span></td>
+                <td>Forces a database and JSON export backup.</td>
             </tr>
         </tbody>
     </table>
-    <h2>Deployment</h2>
-    <p>To deploy as a system service, use the provided installation script:</p>
-    <pre>
-# Make script executable
-chmod +x install-service.sh
-
-# Run installer
-./install-service.sh
-    </pre>
-    <p>
-        This script automates the creation of the
-        <code>leaderboard-updater.service</code>
-        and sets up logging at <code>/var/log/leaderboard.log</code>.
+    <h2>📦 Deployment (Linux/Systemd)</h2>
+    <p>To ensure 24/7 uptime, use the included installer:</p>
+    <pre><code>chmod +x install-service.sh
+sudo ./install-service.sh</code></pre>
+    <p>Logs are streamed to <code>/var/log/leaderboard.log</code> via the <code>pino</code> logger.</p>
+    <hr>
+    <p style="font-size: 0.8rem; color: #6a737d;">
+        Official Scored API Documentation: <a href="https://docs.scored.co/" target="_blank">https://docs.scored.co/</a>
     </p>
-
 </body>
 </html>
