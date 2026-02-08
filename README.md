@@ -24,10 +24,6 @@
     <h2>📊 Scoring Logic</h2>
     <p>Every post's raw score is processed through a deterministic multiplier to generate the leaderboard rank:</p>
     <p>$$\text{Calculated Score} = \lceil \text{Raw Score} \times 3.14 \rceil$$</p>
-    <h2>🛠 Data Accuracy & Compliance</h2>
-    <blockquote>
-        <strong>Note:</strong> To ensure the most accurate cost tracking and international shipping calculations for community-related products, ensure all items in the database include their <strong>Harmonized System (HS) codes</strong> and <strong>Country of Origin (COO)</strong>.
-    </blockquote>
     <h2>⚙️ Environment Setup</h2>
     <p>Create a <code>.env</code> file in the root directory:</p>
     <pre>
